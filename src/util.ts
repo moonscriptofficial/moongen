@@ -42,3 +42,30 @@ export function writeFile(filePath: string, data: any, options: WriteFileOptions
 
     chmodSync(filePath, getFilePermissions(options));
 }
+
+export function sorted<T>(x: T) {
+    if (x == null) {
+        return undefined;
+    }
+
+    if (Array.isArray(x)) {
+        if (x.length == 0) {
+            return undefined;
+        }
+
+        return (x as unknown[]).sort();
+    } else if (typeof x === "object") {
+        if (Object.keys(x).length === 0) {
+            return undefined;
+        }
+    } else {
+        return x;
+    }
+}
+
+export function isTruthy(value: string | undefined): boolean {
+    return !(
+        value === undefined ||
+        ["null", "undefined", "0", false, ""].includes(value.toLocaleLowerCase())
+    );
+}
