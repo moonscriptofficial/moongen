@@ -9,8 +9,8 @@
  *
  */
 
-import { chmodSync, exists, existsSync, mkdirSync, writeFileSync } from "node:fs";
-import * as path from 'node:path';
+import { chmodSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
+import * as path from "node:path";
 
 export interface WriteFileOptions {
     executable?: boolean;
@@ -32,7 +32,11 @@ export function getFilePermissions(options: WriteFileOptions): string {
     }
 }
 
-export function writeFile(filePath: string, data: any, options: WriteFileOptions = {},) {
+export function writeFile(
+    filePath: string,
+    data: any,
+    options: WriteFileOptions = {},
+) {
     if (existsSync(filePath)) {
         chmodSync(filePath, "600");
     }
@@ -49,15 +53,21 @@ export function sorted<T>(x: T) {
     }
 
     if (Array.isArray(x)) {
-        if (x.length == 0) {
+        if (x.length === 0) {
             return undefined;
         }
-
         return (x as unknown[]).sort();
     } else if (typeof x === "object") {
         if (Object.keys(x).length === 0) {
             return undefined;
         }
+        const result: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(x).sort(([l], [r]) =>
+            l.localeCompare(r),
+        )) {
+            result[key] = value;
+        }
+        return result as T;
     } else {
         return x;
     }
@@ -66,6 +76,6 @@ export function sorted<T>(x: T) {
 export function isTruthy(value: string | undefined): boolean {
     return !(
         value === undefined ||
-        ["null", "undefined", "0", false, ""].includes(value.toLocaleLowerCase())
+        ["null", "undefined", "0", "false", ""].includes(value.toLocaleLowerCase())
     );
 }
