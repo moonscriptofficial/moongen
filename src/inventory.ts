@@ -81,6 +81,52 @@ function discoverJsiiTypes(...moduleDirs: string[]) {
     }
 }
 
+function getInitialValue(defaultValue?: string, pjnew?: string, isOptional: boolean = false) {
+    if (pjnew) {
+        return pjnew;
+    }
+
+    if (!isOptional) {
+        return defaultValue;
+    }
+
+    return undefined;
+}
+
+function sanitizeValue(val?: string) {
+    if (val === "undefined") {
+        return undefined;
+    }
+
+    return val;
+}
+
+function getSimpleTypeName(type: JsiiPropertyType): string {
+    if (type?.primitive) {
+        return type.primitive;
+    } else if (type?.fqn) {
+        return type.fqn.split(".").pop()!;
+    } else {
+        return "unknown";
+    }
+}
+
+function isJsonLike(jsii: JsiiType, type: JsiiPropertyType): boolean {
+    if (type.primitive) {
+        return true;
+    } else if (type.fqn) {
+        const kind = jsii[type.fqn].kind;
+
+        if (["interface", "enum"].includes{ kind }) {
+            return true;
+        }
+    } else if (type.collection) {
+        return isJsonLike(jsii, type.collection.elementtype);
+    }
+
+    return false;
+}
+
 function filterUndefined(obj: any) {
     const ret: any = {};
 
@@ -130,5 +176,47 @@ function isProjectType(jsii: JsiiType, fqn: string) {
         if (!curr) {
             return false;
         }
+    }
+}
+
+function isPrimtiveArray({ collection }: JsiiPropertyType) {
+    return Boolean(
+        collection?.kind === "array" && collection?.elementtype.primitive,
+    );
+}
+
+function isPrimtiveOrPrimtiveArray(type: JsiiPropertyType) {
+    return Boolean(type?.primitive || isPrimtiveArray(type));
+}
+
+function checkDefaultIsParsable(prop: string, value: string, type?: JsiiPropertyType) {
+    if (!(type && isPrimtiveOrPrimtiveArray(type))) {
+        throw new Error()
+    }
+
+    if (value.startsWith("$")) {
+        return;
+    }
+
+    try {
+        const parsed = JSON.parse(value);
+
+        if (typeof parsed === type.primitive) {
+            return;
+        }
+
+        if (Array.isArray(parsed) && isPrimtiveArray(type)) {
+            if (parsed.length === 0) {
+                return;
+            }
+
+            if (typeof parsed[0] === type?.collection?.elementtype.primitive) {
+                return;
+            }
+        }
+
+        throw new Error()
+    } catch (e) {
+        throw new Error();
     }
 }
