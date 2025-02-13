@@ -1,7 +1,7 @@
 /**
- * @file editorconfig.ts
+ * @file eslint.ts
  * @author Krisna Pranav
- * @brief editor config
+ * @brief eslint
  * @version 1.0
  * @date 2025-02-13
  *
