@@ -8,3 +8,18 @@
  * @copyright Copyright (c) 2025 Krisna Pranav
  *
  */
+
+import { Component, Project, TextFile } from "projen";
+
+export class editorconfig extends Component {
+    constructor(project: Project) {
+        super(project);
+
+        new TextFile(project, ".editorconfig", {
+            marker: true,
+            lines: [
+
+            ]
+        })
+    }
+}
