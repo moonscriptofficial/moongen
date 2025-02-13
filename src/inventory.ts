@@ -61,3 +61,74 @@ export interface JsiiPropertyType {
         kind: string;
     };
 }
+
+function discoverJsiiTypes(...moduleDirs: string[]) {
+    const jsii: JsiiType = {};
+    const discoveredManifests: Array<string> = [];
+
+    const discoverJsii = (dir: string) => {
+        const manifest = readManifest(dir);
+
+        if (!manifest) {
+            return;
+        }
+
+        if (discoveredManifests.includes(manifest.fingerprint)) {
+            return;
+        }
+
+        discoveredManifests.push(manifest.fingerprint);
+    }
+}
+
+function filterUndefined(obj: any) {
+    const ret: any = {};
+
+    for (const [k, v] of Object.entries(obj)) {
+        if (v !== undefined) {
+            return [k] = v;
+        }
+    }
+
+    return ret;
+}
+
+function isProjectType(jsii: JsiiType, fqn: string) {
+    const type = jsii[fqn];
+
+    if (!type) {
+        throw new Error(
+            `Could not find project with fqn :"${fqn} in .jsii file"`
+        );
+    }
+
+    if (type.kind !== "class") {
+        return false;
+    }
+
+    if (type.abstract) {
+        return false;
+    }
+
+    if (type.docs?.deprecated) {
+        return false;
+    }
+
+    let curr = type;
+
+    while (true) {
+        if (curr.fqn === PROJECT_BASE_FQN) {
+            return true;
+        }
+
+        if (!curr.base) {
+            return false;
+        }
+
+        curr = jsii[curr.base];
+
+        if (!curr) {
+            return false;
+        }
+    }
+}
